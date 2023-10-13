@@ -10,6 +10,7 @@ package wile.rsgauges;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -17,9 +18,11 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import wile.rsgauges.detail.BlockCategories;
+import wile.rsgauges.items.TabbedItem;
 import wile.rsgauges.libmc.detail.Auxiliaries;
 import wile.rsgauges.libmc.detail.OptionalRecipeCondition;
 import wile.rsgauges.libmc.detail.PlayerBlockInteraction;
@@ -39,7 +42,6 @@ public class ModRsGauges
   public ModRsGauges()
   {
     Auxiliaries.init(MODID, LOGGER, ModConfig::getServerConfig);
-    Auxiliaries.logGitVersion(MODNAME);
     Registries.init(MODID, "industrial_small_lever");
     ModContent.init(MODID);
     OptionalRecipeCondition.init(MODID, LOGGER);
@@ -68,6 +70,15 @@ public class ModRsGauges
     {
       wile.rsgauges.libmc.detail.Overlay.register();
       ModContent.processContentClientSide(event);
+    }
+
+    @SubscribeEvent
+    public static void onCreativeTabContents(BuildCreativeModeTabContentsEvent event) {
+      ForgeRegistries.ITEMS.forEach(item -> {
+        if (item instanceof TabbedItem rsItem && event.getTab() == rsItem.getCreativeTab()) {
+          event.accept(rsItem.getItemLike());
+        }
+      });
     }
 
     @SubscribeEvent

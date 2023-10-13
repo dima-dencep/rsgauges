@@ -1,90 +1,74 @@
-// @file build.gradle
-// Gauges and Switches mod gradle build relay
-buildscript {
-  repositories {
-    maven { url = 'https://maven.minecraftforge.net' }
-    mavenCentral()
-  }
-  dependencies {
-    classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-  }
+plugins {
+    id 'dev.architectury.loom' version '1.3-SNAPSHOT'
+    id 'maven-publish'
+    id 'io.github.juuxel.loom-quiltflower' version '1.10.0'
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-//-----------------------------------------------------------------------------
-version = "${version_rsgauges}"
-group = "wile.rsgauges"
-archivesBaseName = "rsgauges-${version_minecraft}"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = project.maven_group
+
+loom {
+    silentMojangMappingsLicense()
+}
 
 repositories {
-  maven { name = "Progwml6 maven"; url = "https://dvs1.progwml6.com/files/maven/" } // JEI files before January 2023
-  maven { name = "Jared's maven"; url = "https://maven.blamejared.com/" } // JEI files since January 2023
-  maven { name = "ModMaven"; url = "https://modmaven.dev" } // JEI files, fallback
-  flatDir { dir 'libs' } // Mod jar dependencies in ./libs
-}
-
-minecraft {
-  mappings channel: "official", version: "${version_minecraft}"
-  runs {
-    client {
-      workingDirectory project.file('run')
-      property 'forge.logging.markers', '' // SCAN,REGISTRIES,REGISTRYDUMP
-      property 'forge.logging.console.level', 'info'
-      mods { rsgauges { source sourceSets.main } } }
-    server {
-      workingDirectory project.file('run')
-      property 'forge.logging.markers', '' // SCAN,REGISTRIES,REGISTRYDUMP
-      property 'forge.logging.console.level', 'info'
-      mods { rsgauges { source sourceSets.main } }
-    }
-  }
+    maven { url 'https://modmaven.dev/' }
 }
 
 dependencies {
-  minecraft "net.minecraftforge:forge:${version_forge_minecraft}"
-  compileOnly fg.deobf("mezz.jei:jei-${version_minecraft}-common-api:${version_jei}")
-  compileOnly fg.deobf("mezz.jei:jei-${version_minecraft}-forge-api:${version_jei}")
-  runtimeOnly fg.deobf("mezz.jei:jei-${version_minecraft}-forge:${version_jei}")
+    //to change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    forge "net.minecraftforge:forge:${project.loader_version}"
+
+    modCompileOnly "mezz.jei:jei-${project.minecraft_version}-forge:${project.jei_version}"
 }
 
 processResources {
-  outputs.upToDateWhen { false }
-  doLast { file("${sourceSets.main.output.resourcesDir}/.gitversion-rsgauges").text = 'git log "-1" "--format=%h"'.execute().in.text.trim() }
+    inputs.property "version", project.version
+
+    filesMatching("META-INF/mods.toml") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
+    it.options.release = 17
+}
+
+java {
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
 }
 
 jar {
-  manifest {
-    attributes([
-      "Specification-Title": "rsgauges",
-      "Specification-Vendor": "wilechaote",
-      "Specification-Version": "1", // We are version 1 of ourselves
-      "Implementation-Title": project.name,
-      "Implementation-Version": "${version_rsgauges}",
-      "Implementation-Vendor" :"wilechaote",
-      "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-    ])
-  }
+    from "LICENSE"
 }
 
-jar.finalizedBy('reobfJar')
-
-// Signing
-import net.minecraftforge.gradle.common.tasks.SignJar
-project.afterEvaluate {
-  task signJar(type: SignJar, dependsOn: jar) {
-    onlyIf { project.hasProperty("keystore_file") }
-    if(project.hasProperty("keystore_file")) {
-      keyStore = project.getProperty("keystore_file")
-      alias = project.getProperty("keystore_alias")
-      storePass = project.getProperty("keystore_pass")
-      keyPass = project.getProperty("keystore_keypass")
-      inputFile = jar.archiveFile
-      outputFile = jar.archiveFile
-    } else {
-      logger.warn("[WARNING] Signing skipped.")
+// configure the maven publication
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
     }
-  }
-  reobfJar.finalizedBy('signJar')
+
+    // select the repositories you want to publish to
+    repositories {
+        maven {
+            name = "ConstructLegacy"
+            url = "https://repo.constructlegacy.ru/public"
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
 }

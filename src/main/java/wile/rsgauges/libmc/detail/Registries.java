@@ -8,12 +8,13 @@
  */
 package wile.rsgauges.libmc.detail;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +29,7 @@ import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.tuple.Pair;
 import wile.rsgauges.ModRsGauges;
 import wile.rsgauges.detail.ModResources;
+import wile.rsgauges.items.ModBlockItem;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -40,6 +42,7 @@ public class Registries
   private static String creative_tab_icon = "";
   private static CreativeModeTab creative_tab = null;
 
+  private static final DeferredRegister<CreativeModeTab> creative_tab_register = DeferredRegister.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, ModRsGauges.MODID);
   private static final DeferredRegister<Block> block_deferred_register = DeferredRegister.create(ForgeRegistries.BLOCKS, ModRsGauges.MODID);
   private static final DeferredRegister<Item> item_deferred_register = DeferredRegister.create(ForgeRegistries.ITEMS, ModRsGauges.MODID);
   private static final DeferredRegister<BlockEntityType<?>> block_entity_deferred_register = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ModRsGauges.MODID);
@@ -59,13 +62,16 @@ public class Registries
   public static void init(String mod_id, String creative_tab_icon_item_name)
   { modid = mod_id; creative_tab_icon=creative_tab_icon_item_name; }
 
-  public static CreativeModeTab getCreativeModeTab()
-  {
-    if(creative_tab==null) {
-      creative_tab = (new CreativeModeTab("tab" + modid) {
-        public ItemStack makeIcon() { return new ItemStack(registered_items.get(creative_tab_icon).get()); }
-      });
+  public static CreativeModeTab getCreativeModeTab() {
+    if (creative_tab==null) {
+      creative_tab = CreativeModeTab.builder()
+              .title(Component.translatable("tab" + modid))
+              .icon(() -> new ItemStack(registered_items.get(creative_tab_icon).get()))
+              .build();
+
+      creative_tab_register.register("tab" + modid, () -> creative_tab);
     }
+
     return creative_tab;
   }
 
@@ -128,7 +134,7 @@ public class Registries
   {
     RegistryObject<Block> block = block_deferred_register.register(registry_name, block_supplier);
     RegistryObject<Item> blockItem = item_deferred_register.register(registry_name,
-            () -> new BlockItem(block.get(), (new Item.Properties().tab(getCreativeModeTab()))));
+            () -> new ModBlockItem(block.get(), new Item.Properties()));
     registered_blocks.put(registry_name, block);
     registered_items.put(registry_name, blockItem);
     registered_block_classes.add(Pair.of(clazz, block));
@@ -168,7 +174,7 @@ public class Registries
 
   public static void addMenuType(String registry_name, MenuType.MenuSupplier<?> supplier)
   {
-    RegistryObject<MenuType<?>> menuType = menu_deferred_register.register(registry_name, () -> new MenuType<>(supplier));
+    RegistryObject<MenuType<?>> menuType = menu_deferred_register.register(registry_name, () -> new MenuType<>(supplier, FeatureFlags.VANILLA_SET));
     registered_menu_types.put(registry_name, menuType);
   }
 
@@ -212,6 +218,9 @@ public class Registries
 
     IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+    getCreativeModeTab(); // Register tab
+
+    creative_tab_register.register(eventBus);
     block_deferred_register.register(eventBus);
     item_deferred_register.register(eventBus);
     block_entity_deferred_register.register(eventBus);

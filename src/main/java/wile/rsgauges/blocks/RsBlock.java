@@ -24,10 +24,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -45,6 +47,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -52,15 +55,18 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import wile.rsgauges.ModConfig;
+import wile.rsgauges.items.TabbedItem;
 import wile.rsgauges.libmc.detail.Auxiliaries;
 import wile.rsgauges.libmc.detail.Networking;
+import wile.rsgauges.libmc.detail.Registries;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
 
-public abstract class RsBlock extends Block implements EntityBlock
+public abstract class RsBlock extends Block implements EntityBlock, TabbedItem
 {
   public static final long RSBLOCK_CONFIG_SOLID              = 0x0000000000000000l;
   public static final long RSBLOCK_CONFIG_CUTOUT             = 0x1000000000000000l;
@@ -123,8 +129,9 @@ public abstract class RsBlock extends Block implements EntityBlock
   { return getShape(state, world, pos, selectionContext); }
 
   @Override
-  public boolean isPossibleToRespawnInThis()
-  { return false; }
+  public boolean isPossibleToRespawnInThis(BlockState state) {
+    return false;
+  }
 
   @Override
   public boolean isValidSpawn(BlockState state, BlockGetter world, BlockPos pos, SpawnPlacements.Type type, @Nullable EntityType<?> entityType)
@@ -177,8 +184,7 @@ public abstract class RsBlock extends Block implements EntityBlock
 
   @Override
   @SuppressWarnings("deprecation")
-  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos pos, BlockPos facingPos)
-  {
+  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos pos, BlockPos facingPos) {
     if((config & RSBLOCK_NOT_WATERLOGGABLE)==0) {
       if(state.getValue(WATERLOGGED)) world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
     }
@@ -187,18 +193,19 @@ public abstract class RsBlock extends Block implements EntityBlock
 
   @Override
   @SuppressWarnings("deprecation")
-  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving)
-  {}
+  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+  }
 
   @Override
   @SuppressWarnings("deprecation")
-  public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder)
-  { return Collections.singletonList(new ItemStack(state.getBlock().asItem())); }
+  public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+    return Collections.singletonList(new ItemStack(state.getBlock().asItem()));
+  }
 
   @Override
   @SuppressWarnings("deprecation")
-  public void attack(BlockState state, Level world, BlockPos pos, Player player)
-  {}
+  public void attack(BlockState state, Level world, BlockPos pos, Player player) {
+  }
 
   @Override
   @SuppressWarnings("deprecation")
@@ -257,4 +264,13 @@ public abstract class RsBlock extends Block implements EntityBlock
     { super.load(nbt); read(nbt, false); }
   }
 
+  @Override
+  public CreativeModeTab getCreativeTab() {
+    return ModConfig.isOptedOut(this) ? null : Registries.getCreativeModeTab();
+  }
+
+  @Override
+  public ItemLike getItemLike() {
+    return this;
+  }
 }

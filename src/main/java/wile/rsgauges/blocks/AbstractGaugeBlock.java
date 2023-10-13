@@ -14,6 +14,7 @@
  * indicators.
  *
  */
+
 package wile.rsgauges.blocks;
 
 import com.google.common.collect.ImmutableList;
@@ -34,6 +35,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -56,24 +58,27 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 
-public class AbstractGaugeBlock extends RsDirectedBlock implements EntityBlock, SwitchLink.ISwitchLinkable
-{
-  public static final long GAUGE_DATA_POWER_MASK            = 0x000000000000000fl;
-  public static final int  GAUGE_DATA_POWER_SHIFT           = 0;
-  public static final long GAUGE_DATA_BLINKING              = 0x0000000000000100l;
-  public static final long GAUGE_DATA_INVERTED              = 0x0000000000000200l;
-  public static final long GAUGE_DATA_COMPARATOR_MODE       = 0x0000000000000800l;
+public class AbstractGaugeBlock extends RsDirectedBlock implements EntityBlock, SwitchLink.ISwitchLinkable {
+  public static final long GAUGE_DATA_POWER_MASK = 0x000000000000000fL;
+  public static final int  GAUGE_DATA_POWER_SHIFT = 0;
+  public static final long GAUGE_DATA_BLINKING = 0x0000000000000100L;
+  public static final long GAUGE_DATA_INVERTED = 0x0000000000000200L;
+  public static final long GAUGE_DATA_COMPARATOR_MODE = 0x0000000000000800L;
 
-  @Nullable public final ModResources.BlockSoundEvent power_on_sound;
-  @Nullable public final ModResources.BlockSoundEvent power_off_sound;
+  @Nullable
+  public final ModResources.BlockSoundEvent power_on_sound;
+  @Nullable
+  public final ModResources.BlockSoundEvent power_off_sound;
 
   // -------------------------------------------------------------------------------------------------------------------
 
-  public AbstractGaugeBlock(long config, BlockBehaviour.Properties props, final AABB aabb, @Nullable ModResources.BlockSoundEvent powerOnSound, @Nullable ModResources.BlockSoundEvent powerOffSound)
-  { super(config, props, aabb, null); power_on_sound = powerOnSound; power_off_sound = powerOffSound; }
+  public AbstractGaugeBlock(long config, BlockBehaviour.Properties props, final AABB aabb, @Nullable ModResources.BlockSoundEvent powerOnSound, @Nullable ModResources.BlockSoundEvent powerOffSound) {
+    super(config, props, aabb, null); power_on_sound = powerOnSound; power_off_sound = powerOffSound;
+  }
 
-  public AbstractGaugeBlock(long config, BlockBehaviour.Properties props, final AABB aabb)
-  { this(config, props, aabb, null, null); }
+  public AbstractGaugeBlock(long config, BlockBehaviour.Properties props, final AABB aabb) {
+    this(config, props, aabb, null, null);
+  }
 
   // -------------------------------------------------------------------------------------------------------------------
   // Block overrides
@@ -133,16 +138,19 @@ public class AbstractGaugeBlock extends RsDirectedBlock implements EntityBlock, 
   }
 
   @Override
-  public boolean shouldCheckWeakPower(BlockState state, LevelReader world, BlockPos pos, Direction side)
-  { return false; }
+  public boolean shouldCheckWeakPower(BlockState state, SignalGetter level, BlockPos pos, Direction side) {
+    return false;
+  }
 
   @Override
-  public boolean getWeakChanges(BlockState state, LevelReader world, BlockPos pos)
-  { return true; }
+  public boolean getWeakChanges(BlockState state, LevelReader world, BlockPos pos) {
+    return true;
+  }
 
   @Override
-  public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, @Nullable Direction side)
-  { return ((state.getBlock() instanceof AbstractGaugeBlock) && (side == state.getValue(FACING).getOpposite())); }
+  public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, @Nullable Direction side) {
+    return ((state.getBlock() instanceof AbstractGaugeBlock) && (side == state.getValue(FACING).getOpposite()));
+  }
 
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder)
@@ -336,12 +344,14 @@ public class AbstractGaugeBlock extends RsDirectedBlock implements EntityBlock, 
     }
 
     @Override
-    public void write(CompoundTag nbt, boolean updatePacket)
-    { nbt.putLong("scd", scd_); nbt.putInt("lnkinp", switchlink_input_); }
+    public void write(CompoundTag nbt, boolean updatePacket) {
+      nbt.putLong("scd", scd_); nbt.putInt("lnkinp", switchlink_input_);
+    }
 
     @Override
-    public void read(CompoundTag nbt, boolean updatePacket)
-    { scd_= nbt.getLong("scd"); switchlink_input_ = nbt.getInt("lnkinp"); }
+    public void read(CompoundTag nbt, boolean updatePacket) {
+      scd_= nbt.getLong("scd"); switchlink_input_ = nbt.getInt("lnkinp");
+    }
 
     @Override
     @SuppressWarnings("deprecation")

@@ -90,7 +90,7 @@ public class Networking
         ctx.get().enqueueWork(() -> {
           Player player = ctx.get().getSender();
           if(player==null) return;
-          Level world = player.level;
+          Level world = player.level();
           final BlockEntity te = world.getBlockEntity(pkt.pos);
           if(!(te instanceof IPacketTileNotifyReceiver)) return;
           ((IPacketTileNotifyReceiver)te).onClientPacketReceived(ctx.get().getSender(), pkt.nbt);
@@ -273,7 +273,7 @@ public class Networking
     }
 
     public OverlayTextMessage()
-    { data_ = Component.translatable("[unset]"); }
+    { data_ = Component.literal("[unset]"); }
 
     public OverlayTextMessage(final Component tct, int delay)
     { data_ = tct.copy(); delay_ = delay; }
@@ -283,7 +283,7 @@ public class Networking
       try {
         return new OverlayTextMessage(buf.readComponent(), DISPLAY_TIME_MS);
       } catch(Throwable e) {
-        return new OverlayTextMessage(Component.translatable("[incorrect translation]"), DISPLAY_TIME_MS);
+        return new OverlayTextMessage(Component.literal("[incorrect translation]"), DISPLAY_TIME_MS);
       }
     }
 

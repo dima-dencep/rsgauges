@@ -24,6 +24,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -75,27 +76,28 @@ public class SensitiveGlassBlock extends RsBlock
   @Override
   @OnlyIn(Dist.CLIENT)
   @SuppressWarnings("deprecation")
-  public boolean skipRendering(BlockState state, BlockState adjacentBlockState, Direction side)
-  {
+  public boolean skipRendering(BlockState state, BlockState adjacentBlockState, Direction side) {
     if((!(adjacentBlockState.getBlock() instanceof SensitiveGlassBlock))) return false;
     return (adjacentBlockState.getValue(POWERED) == state.getValue(POWERED));
   }
 
   @Override
-  public boolean isPossibleToRespawnInThis()
-  { return false; }
+  public boolean isPossibleToRespawnInThis(BlockState state) {
+    return false;
+  }
 
   @Override
-  public boolean shouldCheckWeakPower(BlockState state, LevelReader world, BlockPos pos, Direction side)
-  { return true; }
+  public boolean shouldCheckWeakPower(BlockState state, SignalGetter level, BlockPos pos, Direction side) {
+    return true;
+  }
 
   @Override
-  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder)
-  { super.createBlockStateDefinition(builder); builder.add(POWERED, COLOR); }
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    super.createBlockStateDefinition(builder); builder.add(POWERED, COLOR);
+  }
 
   @Override
-  public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random)
-  {
+  public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
     if(world.isClientSide()) return;
     if(state.getValue(POWERED) && (!(world.hasNeighborSignal(pos)))) {
       world.setBlock(pos, state.setValue(POWERED, false), 1|2|8|16);

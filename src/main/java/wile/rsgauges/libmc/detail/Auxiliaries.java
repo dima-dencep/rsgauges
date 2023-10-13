@@ -491,39 +491,12 @@ public class Auxiliaries
     }
 
     @Override
-    public BlockRangeIterator iterator()
-    { return new BlockRangeIterator(this); }
-
-    public Stream<BlockPos> stream()
-    { return java.util.stream.StreamSupport.stream(spliterator(), false); }
-  }
-
-  // -------------------------------------------------------------------------------------------------------------------
-  // JAR resource related
-  // -------------------------------------------------------------------------------------------------------------------
-
-  public static String loadResourceText(InputStream is)
-  {
-    try {
-      if(is==null) return "";
-      BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-      return br.lines().collect(Collectors.joining("\n"));
-    } catch(Throwable e) {
-      return "";
+    public BlockRangeIterator iterator() {
+      return new BlockRangeIterator(this);
     }
-  }
 
-  public static String loadResourceText(String path)
-  { return loadResourceText(Auxiliaries.class.getResourceAsStream(path)); }
-
-  public static void logGitVersion(String mod_name)
-  {
-    try {
-      // Done during construction to have an exact version in case of a crash while registering.
-      String version = Auxiliaries.loadResourceText("/.gitversion-" + modid).trim();
-      logInfo(mod_name+((version.isEmpty())?(" (dev build)"):(" GIT id #"+version)) + ".");
-    } catch(Throwable e) {
-      // (void)e; well, then not. Priority is not to get unneeded crashes because of version logging.
+    public Stream<BlockPos> stream() {
+      return java.util.stream.StreamSupport.stream(spliterator(), false);
     }
   }
 }

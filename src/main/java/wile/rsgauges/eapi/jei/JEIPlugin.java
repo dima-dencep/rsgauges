@@ -6,11 +6,11 @@
  *
  * JEI plugin (see https://github.com/mezz/JustEnoughItems/wiki/Creating-Plugins)
  */
-package wile.rsgauges.eapi.jei;
-/*
-public class JEIPlugin {}
-*/
 
+package wile.rsgauges.eapi.jei;
+
+import mezz.jei.api.IModPlugin;
+import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import wile.rsgauges.ModConfig;
 import wile.rsgauges.libmc.detail.Auxiliaries;
 import wile.rsgauges.libmc.detail.Registries;
@@ -27,16 +28,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
-@mezz.jei.api.JeiPlugin
-public class JEIPlugin implements mezz.jei.api.IModPlugin
-{
+@JeiPlugin
+public class JEIPlugin implements IModPlugin {
   @Override
-  public ResourceLocation getPluginUid()
-  { return new ResourceLocation(Auxiliaries.modid(), "jei_plugin_uid"); }
+  public @NotNull ResourceLocation getPluginUid() {
+    return new ResourceLocation(Auxiliaries.modid(), "jei_plugin_uid");
+  }
 
   @Override
-  public void onRuntimeAvailable(IJeiRuntime jeiRuntime)
+  public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime)
   {
     HashSet<Item> blacklisted = new HashSet<>();
     for(Block e: Registries.getRegisteredBlocks()) {
