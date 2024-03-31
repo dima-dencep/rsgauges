@@ -29,19 +29,18 @@ import wile.rsgauges.libmc.detail.PlayerBlockInteraction;
 import wile.rsgauges.libmc.detail.Registries;
 
 
-@Mod("rsgauges")
+@Mod(ModRsGauges.MODID)
 public class ModRsGauges
 {
   public static final String MODID = "rsgauges";
   public static final String MODNAME = "Gauges and Switches";
   public static final int VERSION_DATAFIXER = 0;
-  private static final Logger LOGGER = LogManager.getLogger();
+  public static final Logger LOGGER = LogManager.getLogger();
 
   // -------------------------------------------------------------------------------------------------------------------
 
   public ModRsGauges()
   {
-    Auxiliaries.init(MODID, LOGGER, ModConfig::getServerConfig);
     Registries.init(MODID, "industrial_small_lever");
     ModContent.init(MODID);
     OptionalRecipeCondition.init(MODID, LOGGER);

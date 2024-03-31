@@ -35,6 +35,8 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
+import wile.rsgauges.ModConfig;
+import wile.rsgauges.ModRsGauges;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -54,26 +56,21 @@ import java.util.stream.Stream;
 
 public class Auxiliaries
 {
-  private static String modid;
-  private static Logger logger;
-  private static Supplier<CompoundTag> server_config_supplier = CompoundTag::new;
 
-  public static void init(String modid, Logger logger, Supplier<CompoundTag> server_config_supplier)
-  {
-    Auxiliaries.modid = modid;
-    Auxiliaries.logger = logger;
-    Auxiliaries.server_config_supplier = server_config_supplier;
-  }
+  @Deprecated
+  public static void init(String modid, Logger logger, Supplier<CompoundTag> server_config_supplier) {}
 
   // -------------------------------------------------------------------------------------------------------------------
   // Mod specific exports
   // -------------------------------------------------------------------------------------------------------------------
 
+  @Deprecated
   public static String modid()
-  { return modid; }
+  { return ModRsGauges.MODID; }
 
+  @Deprecated
   public static Logger logger()
-  { return logger; }
+  { return ModRsGauges.LOGGER; }
 
   // -------------------------------------------------------------------------------------------------------------------
   // Sideness, system/environment, tagging interfaces
@@ -106,13 +103,13 @@ public class Auxiliaries
   // -------------------------------------------------------------------------------------------------------------------
 
   public static void logInfo(final String msg)
-  { logger.info(msg); }
+  { ModRsGauges.LOGGER.info(msg); }
 
   public static void logWarn(final String msg)
-  { logger.warn(msg); }
+  { ModRsGauges.LOGGER.warn(msg); }
 
   public static void logError(final String msg)
-  { logger.error(msg); }
+  { ModRsGauges.LOGGER.error(msg); }
 
   // -------------------------------------------------------------------------------------------------------------------
   // Localization, text formatting
@@ -123,11 +120,11 @@ public class Auxiliaries
    * translation keys. Forces formatting argument, nullable if no special formatting shall be applied..
    */
   public static MutableComponent localizable(String modtrkey, Object... args)
-  { return Component.translatable((modtrkey.startsWith("block.") || (modtrkey.startsWith("item."))) ? (modtrkey) : (modid+"."+modtrkey), args); }
+  { return Component.translatable((modtrkey.startsWith("block.") || (modtrkey.startsWith("item."))) ? (modtrkey) : (ModRsGauges.MODID+"."+modtrkey), args); }
 
   public static MutableComponent localizable(String modtrkey, @Nullable ChatFormatting color, Object... args)
   {
-    MutableComponent tr = Component.translatable(modid+"."+modtrkey, args);
+    MutableComponent tr = Component.translatable(ModRsGauges.MODID+"."+modtrkey, args);
     if(color!=null) tr.withStyle(color);
     return tr;
   }
@@ -136,7 +133,7 @@ public class Auxiliaries
   { return localizable(modtrkey, new Object[]{}); }
 
   public static MutableComponent localizable_block_key(String blocksubkey)
-  { return Component.translatable("block."+modid+"."+blocksubkey); }
+  { return Component.translatable("block."+ModRsGauges.MODID+"."+blocksubkey); }
 
   @OnlyIn(Dist.CLIENT)
   public static String localize(String translationKey, Object... args)
@@ -157,10 +154,12 @@ public class Auxiliaries
           boolean not = key.startsWith("!");
           if(not) key = key.replaceFirst("!", "");
           m = kv[1].trim();
-          if(!server_config_supplier.get().contains(key)) {
+          CompoundTag serverConfig = ModConfig.getServerConfig();
+
+          if(!serverConfig.contains(key)) {
             m = "";
           } else {
-            boolean r = server_config_supplier.get().getBoolean(key);
+            boolean r = serverConfig.getBoolean(key);
             if(not) r = !r;
             if(!r) m = "";
           }
@@ -209,8 +208,8 @@ public class Auxiliaries
       } else if(extendedTipCondition()) {
         if(tip_available) tip_text = localize(advancedTooltipTranslationKey + ".tip");
       } else if(addAdvancedTooltipHints) {
-        if(tip_available) tip_text += localize(modid + ".tooltip.hint.extended") + (help_available ? " " : "");
-        if(help_available) tip_text += localize(modid + ".tooltip.hint.help");
+        if(tip_available) tip_text += localize(ModRsGauges.MODID + ".tooltip.hint.extended") + (help_available ? " " : "");
+        if(help_available) tip_text += localize(ModRsGauges.MODID + ".tooltip.hint.help");
       }
       if(tip_text.isEmpty()) return false;
       String[] tip_list = tip_text.split("\\r?\\n");

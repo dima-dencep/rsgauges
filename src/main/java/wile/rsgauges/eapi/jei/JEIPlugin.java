@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import wile.rsgauges.ModConfig;
+import wile.rsgauges.ModRsGauges;
 import wile.rsgauges.libmc.detail.Auxiliaries;
 import wile.rsgauges.libmc.detail.Registries;
 
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 public class JEIPlugin implements IModPlugin {
   @Override
   public @NotNull ResourceLocation getPluginUid() {
-    return new ResourceLocation(Auxiliaries.modid(), "jei_plugin_uid");
+    return new ResourceLocation(ModRsGauges.MODID, "jei_plugin_uid");
   }
 
   @Override
